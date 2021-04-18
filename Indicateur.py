@@ -8,9 +8,9 @@ class Indicateur:
     values = {}
     ts = None
 
-    def __init__(self, values):
+    def __init__(self, crypto, periode=""):
         client = Client(binancekey.KEY, binancekey.SECRET)
-        klines = client.get_historical_klines("NANOBTC", Client.KLINE_INTERVAL_1MINUTE, "1 day ago UTC")
+        klines = client.get_historical_klines(f"{crypto}USDT", Client.KLINE_INTERVAL_1MINUTE, "1 day ago UTC")
 
         df = pd.DataFrame.from_dict(klines)
         df = df.rename(
@@ -18,18 +18,17 @@ class Indicateur:
                      11: "ignore", })
         df = df.set_index("open_time")
         self.ts = BinanceTS(df)
-        self.values = values
 
-    def __getRSI(self, crypto):
-        self.ts.bollinger()
+    def __getRSI(self):
+        return self.ts.RSI()
 
-    def __getBallinger(self, crypto):
-        return 0
+    def __getBollinger(self):
+        return self.ts.bollinger()
 
-    def canBuy(self, crypto):
-        if self.__getRSI(crypto) + self.__getBallinger(crypto) == 2:
-            print("peu acheter")
+    def canBuy(self):
+        if self.__getRSI() + self.__getBollinger() == 2:
+            print("peut acheter")
 
-    def canSell(self, crypto):
-        if self.__getRSI(crypto) + self.__getBallinger(crypto) == -2:
-            print("peu vendre")
+    def canSell(self):
+        if self.__getRSI() + self.__getBollinger() == -2:
+            print("peut vendre")

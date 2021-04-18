@@ -1,4 +1,3 @@
-# ici on a toutes les stats
 import datetime
 
 import krakenex

@@ -4,9 +4,8 @@ from loguru import logger
 
 try:
     logger.add("file.log")
-    values = ""
 
-    indicateur = Indicateur(values)
+    indicateur = Indicateur()
     orderBook = OrderBook(padding=0.5)
 
     cryptos = ["XETH", "BTC"]
@@ -19,7 +18,6 @@ try:
     #         if indicateur.canSell(crypto):
     #             orderBook.addSellOrder(crypto)
 
-    logger.info(orderBook.orders)
 
 except KeyboardInterrupt:
     print('interrupted!')

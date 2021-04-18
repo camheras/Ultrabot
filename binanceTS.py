@@ -12,15 +12,21 @@ class BinanceTS:
     def __init__(self, df):
         self.df = df
 
-    def bollinger(self, df):
-        df['MA20'] = df['close'].rolling(window=20).mean()
-        df['20dSTD'] = df['close'].rolling(window=20).std()
+    def bollinger(self):
+        self.df['MA20'] = self.df['close'].rolling(window=20).mean()
+        self.df['20dSTD'] = self.df['close'].rolling(window=20).std()
 
-        df['Upper'] = df['MA20'] + (df['20dSTD'] * 2)
-        df['Lower'] = df['MA20'] - (df['20dSTD'] * 2)
-        return df
+        self.df['Upper'] = self.df['MA20'] + (self.df['20dSTD'] * 2)
+        self.df['Lower'] = self.df['MA20'] - (self.df['20dSTD'] * 2)
+        self.df[['close', 'MA20', 'Upper', 'Lower']].plot(figsize=(10, 4))
+        plt.grid(True)
+        plt.title(' Bollinger Bands')
+        plt.axis('tight')
+        plt.ylabel('Price')
+        plt.savefig('apple.png', bbox_inches='tight')
+        return self.df
 
-    def RSI(self, df):
+    def RSI(self):
         pass
 
     # bollinger(df)[['close', 'MA20', 'Upper', 'Lower']].plot(figsize=(10, 4))
