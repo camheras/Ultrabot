@@ -3,6 +3,7 @@ import binancekey
 from loguru import logger
 import matplotlib.pyplot as plt
 import numpy as np
+import btalib
 import pandas as pd
 
 
@@ -18,21 +19,14 @@ class BinanceTS:
 
         self.df['Upper'] = self.df['MA20'] + (self.df['20dSTD'] * 2)
         self.df['Lower'] = self.df['MA20'] - (self.df['20dSTD'] * 2)
-        self.df[['close', 'MA20', 'Upper', 'Lower']].plot(figsize=(10, 4))
-        plt.grid(True)
-        plt.title(' Bollinger Bands')
-        plt.axis('tight')
-        plt.ylabel('Price')
-        plt.savefig('apple.png', bbox_inches='tight')
+        # self.df[['close', 'MA20', 'Upper', 'Lower']].plot(figsize=(10, 4))
+        # plt.grid(True)
+        # plt.title(' Bollinger Bands')
+        # plt.axis('tight')
+        # plt.ylabel('Price')
+        # plt.savefig('apple.png', bbox_inches='tight')
         return self.df
 
-    def RSI(self):
-        pass
+    def RSI(self, n=14):
+        return btalib.rsi(self.df['close'], period=n).df.rsi
 
-    # bollinger(df)[['close', 'MA20', 'Upper', 'Lower']].plot(figsize=(10, 4))
-    # plt.grid(True)
-    # plt.title(' Bollinger Bands')
-    # plt.axis('tight')
-    # plt.ylabel('Price')
-    # plt.savefig('apple.png', bbox_inches='tight')
-    # logger.info(df)
