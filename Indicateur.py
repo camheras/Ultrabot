@@ -2,7 +2,6 @@ from datetime import datetime
 
 from binance.client import Client
 import pandas as pd
-import binancekey
 from binanceTS import BinanceTS
 from loguru import logger
 
@@ -31,43 +30,32 @@ class Indicateur:
 
         self.ts = BinanceTS(df)
 
-    def getRSI(self):
+    def __getRSI(self):
         rsi_df = self.ts.RSI()
-        value_rsi = rsi_df[-1]
-        if value_rsi > 65.0:
+        val = rsi_df[-1]
+        if val > 65.0:
             return 1
-        elif value_rsi < 35.0:
+        elif val < 35.0:
             return -1
         else:
             return 0
 
-    def getBollinger(self):
+    def __getBollinger(self):
         upper, lower, current = self.ts.bollinger()[["Upper", "Lower", "close"]].iloc[-1]
-        up_dist = upper - current
-        low_dist = current - lower
 
-        return self.ts.bollinger()[["Upper", "Lower", "close"]].iloc[-1]
+        val = (current * 2 - upper - lower) / (upper - lower)
 
-    def canBuy(self):
-        value_rsi = self.getRSI()
-        value_boll = self.getBollinger()
-
-        if value_rsi > 65.0:
-            rsi = 1
-        elif value_rsi < 35.0:
-            rsi = -1
+        if val > 0.80:
+            return 1
+        elif val < -0.8:
+            return -1
         else:
-            rsi = 0
-
-        if value_boll:
-            boll = 1
-        elif value_boll:
-            boll = -1
-        else:
-            boll = 0
+            return 0
 
     def result(self):
-        if self.getRSI() + self.getBollinger() == 2:
-            print("peut acheter")
-        elif self.getRSI() + self.getBollinger() == -2:
-            print("peut vendre")
+        if self.__getRSI() + self.__getBollinger() == 2:
+            logger.critical("peut acheter")
+        elif self.__getRSI() + self.__getBollinger() == -2:
+            logger.critical("peut vendre")
+        else:
+            logger.info("pas le bon moment")

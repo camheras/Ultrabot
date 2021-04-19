@@ -10,7 +10,7 @@ try:
     cryptos = ["XETH", "BTC"]
     client = Client(binancekey.KEY, binancekey.SECRET)
     indicateur = Indicateur(client, cryptos[1])
-    logger.info(indicateur.getBollinger())
+    indicateur.result()
 
     # orderBook = OrderBook(padding=0.5)
 
