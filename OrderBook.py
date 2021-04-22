@@ -1,59 +1,81 @@
 import datetime
 
-import krakenex
-
 from Compteur import Compteur
-from TraderKraken import TraderKraken
 
 from loguru import logger
+
+from traders.Simulation import Simulation
+from traders.TraderBinance import TraderBinance
 
 
 class OrderBook:
     trader = None
     compteur = None
     padding = 0
-    balance = 0
 
-    def __init__(self, padding):
+    def __init__(self, indicateur=None, trader="simulation", padding=0.2, ):
 
-        self.trader = TraderKraken()
+        if trader == "simulation":
+            self.trader = Simulation()
+        elif trader == "kraken":
+            self.trader = TraderKraken()
+        elif trader == "binance":
+            self.trader = TraderBinance()
+        self.indicateur = indicateur
         self.compteur = Compteur()
         self.balance = self.trader.getBalance()
         self.padding = padding
 
     def addBuyOrder(self, crypto):
-
-        amount = self._getAvailableMoney()
-        currentPrice = self.trader.buy(crypto, amount)
+        value = self.__getAvailableMoney()
+        if self.trader.__class__ == Simulation:
+            currentPrice = self.indicateur.getPrice()
+            self.trader.buy(crypto, value)
+        else:
+            # currentPrice = self.trader.buy(crypto, amount)
+            pass
+        val = float(value) / float(currentPrice)
         self.compteur.buyOrder()
+        self.compteur.addAmountInTrades(val)
         self.compteur.addOrder({
             'crypto': f'{crypto}',
             'buyPrice': currentPrice,
             'sellPrice': '',
-            'value': f'{float(amount) * float(currentPrice)}$',
+            'amount': f'{val}',
+            'value': f'{float(value)}$',
             'timestamp': f'{datetime.datetime.now()}',
         })
 
     def addSellOrder(self, crypto):
 
         amount = self.trader.getAmount(crypto)
-        logger.info(f'Selling {amount} {crypto}')
+
+        if self.trader.__class__ == Simulation:
+            currentPrice = self.indicateur.getPrice()
+            self.trader.sell(crypto, amount / currentPrice)
+        else:
+            # currentPrice = self.trader.sell(crypto, amount)
+            pass
+
         if amount > 0:
-            currentPrice = self.trader.sell(crypto, amount)
+            value = float(amount) / float(currentPrice)
+            # currentPrice = self.trader.sell(crypto, amount)
+            # currentPrice = self.trader.getPrice(crypto)
             self.compteur.sellOrder()
+            self.compteur.removeAmountInTrades(value)
             self.compteur.addOrder({
                 'crypto': f'{crypto}',
                 'buyPrice': '',
                 'sellPrice': currentPrice,
-                'value': f'{float(amount) * float(currentPrice)}$',
+                'value': f'{value}$',
                 'timestamp': f'{datetime.datetime.now()}',
             })
         else:
             logger.error(f"Can't sell, {crypto} balance is not enough.")
 
-    def _getAvailableMoney(self):
-        amount_in_orders = 0
-        for order in self.compteur.getOrders():
-            if order['open']:
-                amount_in_orders += order['value']
-        return (float(amount_in_orders) + float(self.balance)) * self.padding
+    def __getAvailableMoney(self):
+        # TODO changer pour mettre en fonction du nombre de crypto
+        return (self.compteur.getAmountInTrades() + float(self.balance)) * self.padding
+
+    def getTokens(self):
+        return self.trader.getTokens()

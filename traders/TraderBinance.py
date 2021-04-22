@@ -1,13 +1,12 @@
-from requests.exceptions import HTTPError
-from loguru import logger
 from binance.client import Client
 
-import binancekey
+from res import binancekey
 
 from Compteur import Compteur
+from traders.Trader import Trader
 
 
-class TraderBinance:
+class TraderBinance(Trader):
     compteur = None
     client = None
 
@@ -32,3 +31,6 @@ class TraderBinance:
     # Recupere le nombre de tokens possédé
     def getAmount(self, crypto):
         pass
+
+    def getBalance(self):
+        return 1000

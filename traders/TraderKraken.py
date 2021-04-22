@@ -3,9 +3,10 @@ from loguru import logger
 import krakenex
 
 from Compteur import Compteur
+from traders.Trader import Trader
 
 
-class TraderKraken:
+class TraderKraken(Trader):
     compteur = None
     k = krakenex.API()
 

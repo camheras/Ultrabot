@@ -128,6 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-binancekey.py
-kraken.key
-apple.png
+res/binancekey.py
+res/kraken.key
+res/apple.png

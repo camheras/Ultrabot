@@ -1,28 +1,42 @@
+from time import sleep
+
 from binance.client import Client
 
-import binancekey
+from res import binancekey
 from Indicateur import Indicateur
 from OrderBook import OrderBook
 from loguru import logger
+import time
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+
+from traders.Simulation import Simulation
 
 try:
-    logger.add("file.log")
-    cryptos = ["XETH", "BTC"]
+
+    logger.add("res/file.log")
+    cryptos = ["ETH", "BTC"]
     client = Client(binancekey.KEY, binancekey.SECRET)
     indicateur = Indicateur(client, cryptos[1])
-    indicateur.result()
 
-    # orderBook = OrderBook(padding=0.5)
+    orderBook = OrderBook(indicateur=indicateur)
+    # TODO faire une simulation sur les données passées
+    while True:
+        sleep(5.0)
+        start = time.process_time()
+        for crypto in cryptos:
+            indicateur = Indicateur(client, crypto)
+            result = indicateur.result()
+            # logger.info(result)
+            if result:
+                orderBook.addBuyOrder(crypto)
+            elif result == False:
+                orderBook.addSellOrder(crypto)
 
-    # orderBook.addBuyOrder("EOS")
-    # orderBook.addSellOrder("XLM")
-    # while True:
-    #     for crypto in cryptos:
-    #         if indicateur.canBuy(crypto):
-    #             orderBook.addBuyOrder(crypto)
-    #         if indicateur.canSell(crypto):
-    #             orderBook.addSellOrder(crypto)
-
+        end = time.process_time()
+        logger.info(orderBook.compteur.getNbTrade())
 
 except KeyboardInterrupt:
+    logger.info(orderBook.compteur.getOrders())
     print('interrupted!')

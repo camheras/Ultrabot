@@ -13,6 +13,7 @@ class Compteur(metaclass=Singleton):
     __nbSell = 0
     __nbSellFees = 0
     __nbBuyFees = 0
+    __amountInTrades = 0
 
     def buyOrder(self):
         self.__nbBuy += 1
@@ -33,7 +34,19 @@ class Compteur(metaclass=Singleton):
         return self.__orders
 
     def getNbTrade(self):
-        return (self.__nbBuy - self.__nbSell) / self.__nbBuy
+        if not self.__nbBuy == 0 and not self.__nbSell == 0:
+            return (self.__nbBuy - self.__nbSell) / self.__nbBuy
+        else:
+            return 0
 
     def getTotalFees(self):
         return self.__nbBuyFees + self.__nbSellFees
+
+    def addAmountInTrades(self, amount):
+        self.__amountInTrades += amount
+
+    def removeAmountInTrades(self, amount):
+        self.__amountInTrades -= amount
+
+    def getAmountInTrades(self):
+        return self.__amountInTrades

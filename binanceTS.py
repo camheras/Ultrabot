@@ -1,10 +1,4 @@
-from binance.client import Client
-import binancekey
-from loguru import logger
-import matplotlib.pyplot as plt
-import numpy as np
 import btalib
-import pandas as pd
 
 
 class BinanceTS:
@@ -30,3 +24,5 @@ class BinanceTS:
     def RSI(self, n=14):
         return btalib.rsi(self.df['close'], period=n).df.rsi
 
+    def getPrice(self):
+        return self.df['close'].iloc[-1]

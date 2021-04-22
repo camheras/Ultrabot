@@ -54,8 +54,14 @@ class Indicateur:
 
     def result(self):
         if self.__getRSI() + self.__getBollinger() == 2:
-            logger.critical("peut acheter")
+            # logger.critical("peut acheter")
+            return True
         elif self.__getRSI() + self.__getBollinger() == -2:
-            logger.critical("peut vendre")
+            # logger.critical("peut vendre")
+            return False
         else:
-            logger.info("pas le bon moment")
+            # logger.info("pas le bon moment")
+            return None
+
+    def getPrice(self):
+        return self.ts.getPrice()
