@@ -4,7 +4,7 @@ from Compteur import Compteur
 
 from loguru import logger
 
-from traders.Simulation import Simulation
+from traders.TraderSimulation import Simulation
 from traders.TraderBinance import TraderBinance
 
 
@@ -35,7 +35,7 @@ class OrderBook:
             # currentPrice = self.trader.buy(crypto, amount)
             pass
         val = float(value) / float(currentPrice)
-        self.compteur.buyOrder()
+        self.compteur.buyOrder(crypto)
         self.compteur.addAmountInTrades(val)
         self.compteur.addOrder({
             'crypto': f'{crypto}',
@@ -47,31 +47,34 @@ class OrderBook:
         })
 
     def addSellOrder(self, crypto):
-
+        currentPrice = 0
         amount = self.trader.getAmount(crypto)
 
         if self.trader.__class__ == Simulation:
             currentPrice = self.indicateur.getPrice()
-            self.trader.sell(crypto, amount / currentPrice)
         else:
             # currentPrice = self.trader.sell(crypto, amount)
             pass
+        try:
+            self.trader.sell(crypto, float(amount) / float(currentPrice))
+            if amount > 0:
+                value = float(amount) / float(currentPrice)
+                # currentPrice = self.trader.sell(crypto, amount)
+                # currentPrice = self.trader.getPrice(crypto)
+                self.compteur.sellOrder(crypto)
+                self.compteur.removeAmountInTrades(value)
+                self.compteur.addOrder({
+                    'crypto': f'{crypto}',
+                    'buyPrice': '',
+                    'sellPrice': currentPrice,
+                    'value': f'{value}$',
+                    'timestamp': f'{datetime.datetime.now()}',
+                })
+            else:
+                logger.error(f"Can't sell, {crypto} balance is not enough.")
 
-        if amount > 0:
-            value = float(amount) / float(currentPrice)
-            # currentPrice = self.trader.sell(crypto, amount)
-            # currentPrice = self.trader.getPrice(crypto)
-            self.compteur.sellOrder()
-            self.compteur.removeAmountInTrades(value)
-            self.compteur.addOrder({
-                'crypto': f'{crypto}',
-                'buyPrice': '',
-                'sellPrice': currentPrice,
-                'value': f'{value}$',
-                'timestamp': f'{datetime.datetime.now()}',
-            })
-        else:
-            logger.error(f"Can't sell, {crypto} balance is not enough.")
+        except TypeError:
+            logger.error(f"{amount, currentPrice}")
 
     def __getAvailableMoney(self):
         # TODO changer pour mettre en fonction du nombre de crypto

@@ -1,3 +1,6 @@
+from loguru import logger
+
+
 class Singleton(type):
     _instances = {}
 
@@ -14,11 +17,23 @@ class Compteur(metaclass=Singleton):
     __nbSellFees = 0
     __nbBuyFees = 0
     __amountInTrades = 0
+    __nbTrades = {}
 
-    def buyOrder(self):
+    def buyOrder(self, crypto):
+        try:
+            self.__nbTrades[f"{crypto}"]["nbBuy"] += 1
+        except KeyError:
+            self.__nbTrades[f"{crypto}"] = {"nbBuy": 0}
+            self.__nbTrades[f"{crypto}"]["nbBuy"] += 1
         self.__nbBuy += 1
+        logger.info(self.__nbTrades)
 
-    def sellOrder(self):
+    def sellOrder(self, crypto):
+        try:
+            self.__nbTrades[f"{crypto}"]["nbSell"] += 1
+        except KeyError:
+            self.__nbTrades[f"{crypto}"] = {"nbSell": 0}
+            self.__nbTrades[f"{crypto}"]["nbSell"] += 1
         self.__nbSell += 1
 
     def buyFees(self, cost):
@@ -34,10 +49,7 @@ class Compteur(metaclass=Singleton):
         return self.__orders
 
     def getNbTrade(self):
-        if not self.__nbBuy == 0 and not self.__nbSell == 0:
-            return (self.__nbBuy - self.__nbSell) / self.__nbBuy
-        else:
-            return 0
+        return self.__nbBuy + self.__nbSell
 
     def getTotalFees(self):
         return self.__nbBuyFees + self.__nbSellFees
@@ -50,3 +62,7 @@ class Compteur(metaclass=Singleton):
 
     def getAmountInTrades(self):
         return self.__amountInTrades
+
+    def getNbTradeCrypto(self) -> dict:
+        logger.info(self.__nbTrades)
+        return self.__nbTrades
