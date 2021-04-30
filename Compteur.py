@@ -17,23 +17,23 @@ class Compteur(metaclass=Singleton):
     __nbSellFees = 0
     __nbBuyFees = 0
     __amountInTrades = 0
-    __nbTrades = {}
+    __cryptoBook = {}
 
-    def buyOrder(self, crypto):
-        try:
-            self.__nbTrades[f"{crypto}"]["nbBuy"] += 1
-        except KeyError:
-            self.__nbTrades[f"{crypto}"] = {"nbBuy": 0}
-            self.__nbTrades[f"{crypto}"]["nbBuy"] += 1
+    def __init__(self, cryptos):
+        for crypto in cryptos:
+            self.__cryptoBook[f"{crypto}"] = {'nbBuy': 0, 'nbSell': 0, 'currentTrade': {}, 'value': 0}
+        logger.info(self.__cryptoBook)
+
+    def buyOrder(self, crypto, buyPrice, value, timestamp, amount):
+        self.__cryptoBook[f"{crypto}"]["nbBuy"] += 1
+        self.__cryptoBook[f"{crypto}"]["currentTrade"] = {'timestamp': timestamp, 'buyPrice': buyPrice, 'amount': amount, 'value': value}
         self.__nbBuy += 1
-        logger.info(self.__nbTrades)
+        logger.info(self.__cryptoBook)
 
-    def sellOrder(self, crypto):
-        try:
-            self.__nbTrades[f"{crypto}"]["nbSell"] += 1
-        except KeyError:
-            self.__nbTrades[f"{crypto}"] = {"nbSell": 0}
-            self.__nbTrades[f"{crypto}"]["nbSell"] += 1
+    def sellOrder(self, crypto, value):
+        self.__cryptoBook[f"{crypto}"]["nbSell"] += 1
+        self.__cryptoBook[f"{crypto}"]["value"] = value
+        self.__cryptoBook[f"{crypto}"]["currentTrade"] = {}
         self.__nbSell += 1
 
     def buyFees(self, cost):
@@ -63,6 +63,11 @@ class Compteur(metaclass=Singleton):
     def getAmountInTrades(self):
         return self.__amountInTrades
 
-    def getNbTradeCrypto(self) -> dict:
-        logger.info(self.__nbTrades)
-        return self.__nbTrades
+    def getCryptoBook(self) -> dict:
+        return self.__cryptoBook
+
+    def canBuy(self, crypto):
+        return self.__cryptoBook[f"{crypto}"]["currentTrade"] == {}
+
+    def canSell(self, crypto):
+        return not self.__cryptoBook[f"{crypto}"]["currentTrade"] == {}

@@ -23,6 +23,7 @@ class Simulation(Trader):
             self.tokens.append(
                 {'token': crypto,
                  'amount': value})
+        self.balance -= value
 
     def sell(self, crypto, value):
         logger.info(f"SELL {crypto, value}")
@@ -35,6 +36,7 @@ class Simulation(Trader):
                     break
         if not done:
             logger.error(f"Attempt to sell not owned crypto ({value} {crypto})")
+        self.balance += value
 
     # donne le nombre de tokens avec la valeur en $
     def montant(self, crypto, amount):

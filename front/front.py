@@ -7,7 +7,7 @@ class Front:
 
     def __init__(self, cryptos: list):
         self.cryptos = cryptos
-        self.file = open("res/graphana.txt", "a")
+        self.file = open("res/grafana.txt", "a")
         self.file.seek(0)
         self.file.truncate()
         pricecrypto = str(["price " + crypto for crypto in cryptos]).replace("]", "").replace("[", "").replace("\'", "").replace(",", ";").replace("; ", ";")
@@ -17,24 +17,40 @@ class Front:
         self.file.close()
 
     def write(self, orders: list, amountInTrades: int, prices: list, nbTrades: dict):
-        self.file = open("res/graphana.txt", "a")
+        self.file = open("res/grafana.txt", "a")
         pricecrypto = ""
-        nbTradesCrypto = ""
+        nbTradesCrypto = []
+        for id, crypto in enumerate(self.cryptos):
+            nbTradesCrypto.append("0;")
         try:
             for i, _ in enumerate(self.cryptos):
-                logger.error(f"{i, prices[i]}")
                 pricecrypto += str(prices[i]) + ";"
         except IndexError as e:
             logger.info(e)
 
         if not nbTrades == {}:
-            for crypto in nbTrades:
-                nbTradesCrypto += str(int(nbTrades[crypto]["nbBuy"]) + int(nbTrades[crypto]["nbSell"])) + ";"
-        else:
-            for i in self.cryptos:
-                nbTradesCrypto += "0;"
-        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        logger.info(pricecrypto)
-        self.file.write(f"{date};{orders};{pricecrypto}{amountInTrades};{nbTradesCrypto.strip(';')}\n")
+            for id, crypto in enumerate(nbTrades):
+                nb = 0
+                try:
+                    nb += int(nbTrades[crypto]["nbSell"])
+                except KeyError:
+                    pass
+                try:
+                    nb += int(nbTrades[crypto]["nbBuy"])
+                except KeyError:
+                    pass
+
+                nbTradesCrypto[id] = str(nb) + ";"
+
+        else:
+            for id, i in enumerate(self.cryptos):
+                nbTradesCrypto[id] = "0;"
+                logger.error(nbTradesCrypto)
+        date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        tab = ""
+
+        for i in nbTradesCrypto:
+            tab += i
+        self.file.write(f"{date};{orders};{pricecrypto}{tab.strip(';')};{amountInTrades}\n")
         self.file.close()
