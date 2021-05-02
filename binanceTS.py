@@ -1,13 +1,14 @@
 import btalib
+from pandas import DataFrame
 
 
 class BinanceTS:
-    df = None
+    df: DataFrame = None
 
-    def __init__(self, df):
+    def __init__(self, df: DataFrame):
         self.df = df
 
-    def bollinger(self):
+    def bollinger(self) -> DataFrame:
         self.df['MA20'] = self.df['close'].rolling(window=20).mean()
         self.df['20dSTD'] = self.df['close'].rolling(window=20).std()
 
@@ -21,8 +22,11 @@ class BinanceTS:
         # plt.savefig('apple.png', bbox_inches='tight')
         return self.df
 
-    def RSI(self, n=14):
+    def RSI(self, n=14) -> DataFrame:
         return btalib.rsi(self.df['close'], period=n).df.rsi
 
     def getPrice(self):
         return self.df['close'].iloc[-1]
+
+    def getPrices(self) -> DataFrame:
+        return self.df['close']

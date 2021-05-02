@@ -11,8 +11,8 @@ class Indicateur:
     ts = None
     df = ""
 
-    def __init__(self, client, crypto, periode=""):
-        klines = client.get_historical_klines(f"{crypto}USDT", Client.KLINE_INTERVAL_1MINUTE, "3 hours ago UTC")
+    def __init__(self, client, crypto, periode="3 hours ago UTC"):
+        klines = client.get_historical_klines(f"{crypto}USDT", Client.KLINE_INTERVAL_1MINUTE,periode)
 
         self.df = pd.DataFrame.from_dict(klines)
         self.df = self.df.rename(
@@ -55,13 +55,10 @@ class Indicateur:
 
     def result(self):
         if self.getRSI() + self.getBollinger() == 2:
-            # logger.critical("peut acheter")
             return True
         elif self.getRSI() + self.getBollinger() == -2:
-            # logger.critical("peut vendre")
             return False
         else:
-            # logger.info("pas le bon moment")
             return None
 
     def getPrice(self):

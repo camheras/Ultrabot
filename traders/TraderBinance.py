@@ -12,12 +12,12 @@ class TraderBinance(Trader):
 
     def __init__(self):
         self.client = Client(binancekey.KEY, binancekey.SECRET)
-        self.compteur = Compteur()
+        #self.compteur = Compteur()
 
-    def buy(self, crypto, value):
+    def buy(self, crypto, amount, price):
         return None
 
-    def sell(self, crypto, value):
+    def sell(self, crypto, amount, price):
         return None
 
     # donne le nombre de tokens avec la valeur en $

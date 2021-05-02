@@ -2,10 +2,10 @@ class Trader:
     compteur = None
     client = None
 
-    def buy(self, crypto, value):
+    def buy(self, crypto, amount, price):
         pass
 
-    def sell(self, crypto, value):
+    def sell(self, crypto, amount, price):
         pass
 
     # donne le nombre de tokens avec la valeur en $
