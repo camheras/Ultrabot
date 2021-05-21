@@ -1,7 +1,7 @@
 from decimal import Decimal
 from enum import Enum
-
 from loguru import logger
+from strategies.strategies import Levier
 
 
 class Singleton(type):
@@ -18,7 +18,7 @@ class Type(Enum):
     UP = "Up"
 
 
-class Compteur(metaclass=Singleton):
+class Compteur:
     __orders = []
     __nbBuy = 0
     __nbSell = 0
@@ -27,20 +27,29 @@ class Compteur(metaclass=Singleton):
     __amountInTrades = 0
     __cryptoBook = {}
 
-    def __init__(self, cryptos):
+    def __init__(self, cryptos, levier: Levier):
+        self.levier = levier
         self.cryptos = cryptos
         for crypto in cryptos:
-            self.__cryptoBook[f"{crypto}"] = {'nbBuy': 0, 'nbSell': 0, 'currentTrade': {}, 'plusvalue': 0}
+            self.__cryptoBook[f"{crypto}"] = {'nbBuy': 0, 'nbSell': 0, 'currentTrade': {}, 'plusvalue': Decimal(0)}
 
     def buyOrder(self, crypto, buyPrice, value, timestamp, amount, type: Type):
         self.__cryptoBook[f"{crypto}"]["nbBuy"] += 1
-        self.__cryptoBook[f"{crypto}"]["currentTrade"] = {'timestamp': timestamp, 'buyPrice': buyPrice, 'amount': amount, 'type': type, 'value': value}
+        initValue = value
+        value = initValue * self.levier.value
+        amount = amount * self.levier.value
+        loanValue = value - initValue
+        realValue = value - (value * Decimal(0.0004))
+        realAmount = amount - (amount * Decimal(0.0004))
+        self.__cryptoBook[f"{crypto}"]["currentTrade"] = {'timestamp': timestamp, 'buyPrice': buyPrice, 'amount': realAmount, 'type': type, 'value': realValue,
+                                                          'initValue': initValue,
+                                                          'loanValue': loanValue}
         self.__nbBuy += 1
 
     def sellOrder(self, crypto, value):
         self.__cryptoBook[f"{crypto}"]["nbSell"] += 1
-        # TODO ajouter le multiplicateur
-        self.__cryptoBook[f"{crypto}"]["plusvalue"] += Decimal(value - self.__cryptoBook[f"{crypto}"]["currentTrade"]["value"]).quantize(Decimal('.00000'))
+        plusvalue = value - self.__cryptoBook[f"{crypto}"]["currentTrade"]["initValue"]
+        self.__cryptoBook[f"{crypto}"]["plusvalue"] += Decimal(Decimal(plusvalue).quantize(Decimal('.00000000')))
         self.__cryptoBook[f"{crypto}"]["currentTrade"] = {}
         self.__nbSell += 1
 
@@ -63,6 +72,7 @@ class Compteur(metaclass=Singleton):
         return self.__nbBuyFees + self.__nbSellFees
 
     def addAmountInTrades(self, value):
+        value = value - (value * Decimal(0.0004))
         self.__amountInTrades += value
 
     def removeAmountInTrades(self, value):

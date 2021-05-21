@@ -1,5 +1,8 @@
 import btalib
+from btalib import ema
+from btalib.meta.lines import Line
 from pandas import DataFrame
+import backtrader as bt
 
 
 class BinanceTS:
@@ -30,3 +33,14 @@ class BinanceTS:
 
     def getPrices(self) -> DataFrame:
         return self.df['close']
+
+    def MACD(self) -> Line:
+        return btalib.macd(self.df.close)
+
+    def EMA200(self) -> ema:
+        return btalib.ema(self.df.close, period=200)
+
+    def donchian(self, period=20):
+        self.df['highest'] = bt.ind.Highest(self.df['high'], period=period)
+        self.df['lowest'] = bt.ind.Lowest(self.df['low'], period=period)
+        self.df['dcm'] = (self.df['highest'] + self.df['lowest']) / 2.0
