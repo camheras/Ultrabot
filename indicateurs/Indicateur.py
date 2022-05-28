@@ -13,9 +13,9 @@ class Indicateur:
 
     def __init__(self, client, crypto, periode):
         if len(periode) > 1 and type(periode) == list:
-            klines = client.get_historical_klines(f"{crypto}USDT", Client.KLINE_INTERVAL_1MINUTE, '1 Apr, 2021', '8 Apr, 2021')
+            klines = client.get_historical_klines(f"{crypto}USDT", Client.KLINE_INTERVAL_30MINUTE, periode[0], periode[1])
         else:
-            klines = client.get_historical_klines(f"{crypto}USDT", Client.KLINE_INTERVAL_1MINUTE, periode)
+            klines = client.get_historical_klines(f"{crypto}USDT", Client.KLINE_INTERVAL_30MINUTE, periode)
 
         self.df = pd.DataFrame.from_dict(klines)
         self.df = self.df.rename(

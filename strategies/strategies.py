@@ -9,7 +9,7 @@ class IndicateurE(Enum):
     MACD = "MACD"
     MACDzeroed = "MACDzeroed"
     EMA200 = "EMA200"
-    Donchian = "Donchian"
+    # Donchian = "Donchian"
     RSI30 = "RSI30"
     RSI35 = "RSI35"
     RSI25 = "RSI25"

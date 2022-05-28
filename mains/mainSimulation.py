@@ -16,7 +16,7 @@ from strategies.strategies import Levier, IndicateurE
 
 class MainSimulation:
 
-    def __init__(self, cryptos, time_range, indicateurs: list, validationPercent: float, levier: Levier = Levier.X1):
+    def __init__(self, cryptos, time_range, indicateurs: list, validationPercent: float, data: dict, levier: Levier):
         logger.add("res/log_test.log")
         self.time_range = time_range
         self.cryptos = cryptos
@@ -25,24 +25,15 @@ class MainSimulation:
         self.levier = levier
         self.front = Front(cryptos)
         self.client = Client(binancekey.KEY, binancekey.SECRET)
+        self.data = data
         self.tab = []
         self.t = {}
 
         self.orderBook = OrderBook(cryptos, levier)
 
     def start(self):
-        for crypto in self.cryptos:
-            df = Indicateur(self.client, crypto, periode=self.time_range).df
-            bin = BinanceTS(df)
-            df['rsi'] = bin.RSI()
-            df['signal'] = bin.MACD()[1].series
-            df['macd'] = bin.MACD()[0].series
-            df['ema'] = bin.EMA200()[0]
-            bin.bollinger()
-            # bin.donchian()
-            df = df[['close', 'rsi', 'Upper', 'Lower', 'signal', 'macd', 'ema']]
-            # df.to_csv(f"{crypto}.csv")
-            self.tab.append(df)
+        for df in self.data:
+            self.tab.append(self.data[df])
 
         for id, obj in enumerate(self.tab[0].iterrows()):
             index, _ = obj
@@ -51,7 +42,7 @@ class MainSimulation:
             for i, crypto in enumerate(self.cryptos):
                 price, rsi, upper, lower, signal, macd, ema = self.tab[i].iloc[id][['close', 'rsi', 'Upper', 'Lower', 'signal', 'macd', 'ema']]
                 bol = (price * 2 - upper - lower) / (upper - lower)
-
+                self.checkLiquidation(crypto, price, self.levier)
                 result = self.calculIndicateurs(self.indicateurs, self.validationPercent, [price, rsi, upper, lower, signal, macd, ema, bol])
 
                 if result and self.orderBook.compteur.canBuyDown(crypto):
@@ -173,10 +164,36 @@ class MainSimulation:
                 nb += self.getEMA(price, ema)
             if indicateur == IndicateurE.MACDzeroed:
                 nb += self.getMACDzeroed(price, ema)
-            if indicateur == IndicateurE.Donchian:
-                # nb += self.getDonchian()
-                pass
+            # if indicateur == IndicateurE.Donchian:
+            # nb += self.getDonchian()
         if nb / size >= validationPercent:
             return True
         else:
             return False
+
+    def setup(self, crypto):
+        # df = Indicateur(self.client, crypto, periode=self.time_range).df
+        df = self.data[crypto]
+        bin = BinanceTS(df)
+        df['rsi'] = bin.RSI()
+        df['signal'] = bin.MACD()[1].series
+        df['macd'] = bin.MACD()[0].series
+        df['ema'] = bin.EMA200()[0]
+        bin.bollinger()
+        # bin.donchian()
+        df = df[['close', 'rsi', 'Upper', 'Lower', 'signal', 'macd', 'ema']]
+        return df
+        # df.to_csv(f"{crypto}.csv")
+
+    def checkLiquidation(self, crypto, price, levier: Levier):
+        orderbook = self.orderBook.compteur.getCryptoBook()[f'{crypto}']
+        currentTrade = orderbook['currentTrade']
+        logger.info(currentTrade)
+        if not currentTrade == {}:
+            buyPrice = currentTrade['buyPrice']
+            type = currentTrade['type']
+
+            if type == Type.UP:
+                currentPlusValue = price - buyPrice
+            elif type == Type.DOWN:
+                currentPlusValue = buyPrice - price
